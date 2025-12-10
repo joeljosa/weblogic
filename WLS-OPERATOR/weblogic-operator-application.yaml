@@ -41,3 +41,9 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: weblogic-operator-sa
+  namespace: weblogic-operator-ns
