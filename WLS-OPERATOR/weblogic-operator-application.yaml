@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: weblogic-kubernetes-operator
+  name: weblogic-operator
   namespace: argocd
   # Finalizer ensures ALL resources are deleted when this Application is deleted
   finalizers:
