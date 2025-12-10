@@ -28,7 +28,7 @@ spec:
   # SYNC POLICY: Enable automatic synchronization
   syncPolicy:
     automated:
-      prune: true    # Automatically delete removed resources
-      selfHeal: true # Automatically revert manual changes in the cluster
+      prune: false    # Automatically delete removed resources
+      selfHeal: false # Automatically revert manual changes in the cluster
     syncOptions:
       - CreateNamespace=true # Creates the destination namespace if it doesn't exist
