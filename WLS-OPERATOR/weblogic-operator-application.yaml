@@ -31,4 +31,14 @@ spec:
       prune: false    # Automatically delete removed resources
       selfHeal: false # Automatically revert manual changes in the cluster
     syncOptions:
-      - CreateNamespace=true # Creates the destination namespace if it doesn't exist
+      - CreateNamespace=true
+    # Add ignoreDifferences to prevent ArgoCD from trying to sync the dynamically generated secrets
+    ignoreDifferences:
+      - group: ""  # core API group for secrets
+        kind: Secret
+        name: weblogic-operator-secrets
+        namespace: weblogic-operator
+      - group: ""
+        kind: Secret
+        name: weblogic-webhook-secrets
+        namespace: weblogic-operator
