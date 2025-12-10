@@ -20,5 +20,5 @@ spec:
     namespace: weblogic-operator
   syncPolicy:
     automated:
-      prune: true
-      selfHeal: true
+      prune: false
+      selfHeal: false
