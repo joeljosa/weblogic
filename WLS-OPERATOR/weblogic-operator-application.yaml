@@ -13,8 +13,8 @@ spec:
     helm:
       # Parameters to configure the Helm chart (equivalent to --set flags)
       parameters:
-        - name: serviceAccount
-          value: "weblogic-operator-sa"
+        # - name: serviceAccount
+        #   value: "weblogic-operator-sa"
         - name: domainNamespaceSelectionStrategy
           value: "LabelSelector"
         - name: domainNamespaceLabelSelector
