@@ -1,16 +1,18 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: weblogic-kubernetes-operator
-  namespace: argocd # This namespace must match your ArgoCD installation
+  name: weblogic-operator
+  namespace: argocd
+  # Finalizer ensures ALL resources are deleted when this Application is deleted
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
-  project: default # Or a dedicated project you created
+  project: default
   source:
     repoURL: https://oracle.github.io/weblogic-kubernetes-operator/charts
     chart: weblogic-operator
-    targetRevision: 4.3.5 # Pin to a specific stable version
+    targetRevision: 4.3.5
     helm:
-      # Override default Helm chart values
       parameters:
         - name: serviceAccount
           value: "weblogic-operator-sa"
@@ -18,12 +20,24 @@ spec:
           value: "LabelSelector"
         - name: domainNamespaceLabelSelector
           value: "weblogic-operator=enabled"
+      # This section adds the ServiceAccount as an EXTRA manifest, ensuring it's part of the sync.
+      # The sync-wave annotation forces it to be created before the pods that depend on it.
+      values: |
+        extraManifests:
+          - |
+            apiVersion: v1
+            kind: ServiceAccount
+            metadata:
+              name: weblogic-operator-sa
+              namespace: weblogic-operator-ns
+              annotations:
+                argocd.argoproj.io/sync-wave: "-1"
   destination:
-    server: https://kubernetes.default.svc # Your EKS cluster
-    namespace: weblogic-operator-ns # Namespace where operator will run
+    server: https://kubernetes.default.svc
+    namespace: weblogic-operator-ns
   syncPolicy:
     automated:
-      prune: true # Clean up resources if removed from Git
-      selfHeal: true # Correct drift from Git state
+      prune: true
+      selfHeal: true
     syncOptions:
-      - CreateNamespace=true # Allows ArgoCD to create the namespace if missing
+      - CreateNamespace=true
