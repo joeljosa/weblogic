@@ -4,21 +4,53 @@ kind: Application
 metadata:
   name: weblogic-operator
   namespace: argocd
+  # Optional: ignore extraneous hook-generated resources at the application level
+  annotations:
+    # If the chart creates resources not present in Git (via Helm hooks),
+    # this prevents "Extraneous" warnings in the UI for those objects.
+    argocd.argoproj.io/compare-options: IgnoreExtraneous
 spec:
   project: default
-  source:
-    repoURL: https://oracle.github.io/weblogic-kubernetes-operator/charts
-    chart: weblogic-operator
-    targetRevision: 4.0.2   # Replace with latest version
-    helm:
-      values: |
-        domainNamespaceSelectionStrategy: LabelSelector
-        enableClusterRoleBinding: true
-        # Add other custom values here
   destination:
     server: https://kubernetes.default.svc
     namespace: weblogic-operator
+  source:
+    # --- Use the official Helm repo ---
+    repoURL: https://oracle.github.io/weblogic-kubernetes-operator/charts
+    chart: weblogic-operator
+    targetRevision: 4.3.5           # <-- set to the version you intend to use
+    helm:
+      # Put your operator values here. Example minimal values shown.
+      values: |
+        # Example: select namespaces by label rather than listing them
+        domainNamespaceSelectionStrategy: LabelSelector
+        enableClusterRoleBinding: true
+        # Add your custom settings below (e.g., logging, metrics, etc.)
   syncPolicy:
     automated:
       prune: false
       selfHeal: false
+    syncOptions:
+      - CreateNamespace=true           # create weblogic-operator ns if missing
+      - RespectIgnoreDifferences=true  # honor the ignoreDifferences rules
+      - Validate=false                 # relax validation during first install
+      - Replace=true                   # replace objects on immutable field diffs
+  # --- Ignore runtime-generated differences for secrets ---
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: weblogic-operator-secrets
+      namespace: weblogic-operator
+      # Ignore the binary data and annotations that change at runtime
+      jsonPointers:
+        - /data
+        - /stringData
+        - /metadata/annotations
+    - group: ""
+      kind: Secret
+      name: weblogic-webhook-secrets
+      namespace: weblogic-operator
+      jsonPointers:
+        - /data
+        - /stringData
+        - /metadata/annotations
