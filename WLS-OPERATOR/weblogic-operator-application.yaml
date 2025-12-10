@@ -1,44 +1,24 @@
+
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: wls-operator
-  namespace: argocd  # The namespace where your ArgoCD is installed
+  name: weblogic-operator
+  namespace: argocd
 spec:
   project: default
-  # SOURCE: Define the WebLogic Operator Helm chart
   source:
-    repoURL: 'https://oracle.github.io/weblogic-kubernetes-operator/charts'
+    repoURL: https://oracle.github.io/weblogic-kubernetes-operator/charts
     chart: weblogic-operator
-    targetRevision: 4.3.5 # Specify your desired version, e.g., 4.2.0
+    targetRevision: 4.0.2   # Replace with latest version
     helm:
-      # Parameters to configure the Helm chart (equivalent to --set flags)
-      parameters:
-        # - name: serviceAccount
-        #   value: "weblogic-operator-sa"
-        - name: domainNamespaceSelectionStrategy
-          value: "LabelSelector"
-        - name: domainNamespaceLabelSelector
-          value: "weblogic-operator=enabled"
-
-  # DESTINATION: Your EKS cluster and target namespace
+      values: |
+        domainNamespaceSelectionStrategy: LabelSelector
+        enableClusterRoleBinding: true
+        # Add other custom values here
   destination:
-    server: 'https://kubernetes.default.svc' # Uses the same cluster ArgoCD is running on
-    namespace: 'weblogic-operator'        # The namespace for the operator. ArgoCD will create it if needed.
-
-  # SYNC POLICY: Enable automatic synchronization
+    server: https://kubernetes.default.svc
+    namespace: weblogic-operator
   syncPolicy:
     automated:
-      prune: false    # Automatically delete removed resources
-      selfHeal: false # Automatically revert manual changes in the cluster
-    syncOptions:
-      - CreateNamespace=true
-    # Add ignoreDifferences to prevent ArgoCD from trying to sync the dynamically generated secrets
-    ignoreDifferences:
-      - group: ""  # core API group for secrets
-        kind: Secret
-        name: weblogic-operator-secrets
-        namespace: weblogic-operator
-      - group: ""
-        kind: Secret
-        name: weblogic-webhook-secrets
-        namespace: weblogic-operator
+      prune: true
+      selfHeal: true
