@@ -1,29 +1,30 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: weblogic-kubernetes-operator
-  namespace: argocd # This namespace must match your ArgoCD installation
+  name: weblogic-operator
+  namespace: argocd  # The namespace where your ArgoCD is installed
 spec:
-  project: default # Or a dedicated project you created
+  project: default
   source:
-    repoURL: https://oracle.github.io/weblogic-kubernetes-operator/charts
+    # The official Helm chart repository for the WebLogic Operator
+    repoURL: https://oracle.github.io/weblogic-kubernetes-operator/charts[citation:1]
     chart: weblogic-operator
-    targetRevision: 4.3.5 # Pin to a specific stable version
+    targetRevision: 4.3.5  # Pin to a specific stable version[citation:4]
     helm:
-      # Override default Helm chart values
+      # These Helm parameters override the chart's defaults[citation:9]
       parameters:
         - name: serviceAccount
           value: "weblogic-operator-sa"
         - name: domainNamespaceSelectionStrategy
-          value: "LabelSelector"
+          value: "LabelSelector"[citation:1][citation:4]
         - name: domainNamespaceLabelSelector
-          value: "weblogic-operator=enabled"
+          value: "weblogic-operator=enabled"[citation:1]
   destination:
-    server: https://kubernetes.default.svc # Your EKS cluster
-    namespace: weblogic-operator-ns # Namespace where operator will run
+    server: https://kubernetes.default.svc
+    namespace: weblogic-operator-ns  # Where the operator will run
   syncPolicy:
     automated:
-      prune: true # Clean up resources if removed from Git
-      selfHeal: true # Correct drift from Git state
+      prune: true
+      selfHeal: true
     syncOptions:
-      - CreateNamespace=true # Allows ArgoCD to create the namespace if missing
+      - CreateNamespace=true  # ArgoCD will create the namespace if needed
